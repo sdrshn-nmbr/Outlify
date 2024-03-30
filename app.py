@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, url_for
+from flask import Flask, request, redirect, url_for, render_template
 #from postgrest_py import PostgrestClient
 from dotenv import load_dotenv
 import os
@@ -13,6 +13,11 @@ key: str = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
 
 app = Flask(__name__)
+
+@app.route("/")
+def home():
+    print(supabase.auth.get_user())
+    return render_template('main.html')
 
 
 @app.route("/auth")
@@ -56,7 +61,7 @@ def get_weather():
     zipcode = input("Enter Zipcode: ")
     api_key = "882d7c4617b36d2101b88c388111c3a0"
     url = f"http://api.openweathermap.org/data/2.5/weather?zip={zipcode},us&appid={api_key}&units=imperial"
-    print("Hello")
+    #print("Hello")
     response = requests.get(url)
     weather_data = response.json()
 
