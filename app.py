@@ -7,9 +7,11 @@ from pprint import pprint as pp
 
 from supabase import create_client, Client
 
-load_dotenv()
-url: str = os.environ.get("SUPABASE_URL")
-key: str = os.environ.get("SUPABASE_KEY")
+# load_dotenv()
+url = 'https://yhjgqrrmkmbkiunfwxbo.supabase.co'
+key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloamdxcnJta21ia2l1bmZ3eGJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTE4MTQzODIsImV4cCI6MjAyNzM5MDM4Mn0.BLD1z5AuIYV77SKF8t0z5gJIHJ88MyFAkBvo4Kc3PO0'
+# url: str = os.environ.get("SUPABASE_URL")
+# key: str = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
 
 app = Flask(__name__)
