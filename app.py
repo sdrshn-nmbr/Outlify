@@ -18,9 +18,51 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    print(supabase.auth.get_user())
-    return render_template('main.html')
+    user = supabase.auth.get_user()
 
+    if user:
+        print(user)
+        return render_template('main.html')
+    else:
+        return render_template('login.html')
+    
+@app.route("/signup")
+def signup_page():
+    return render_template('signup.html')
+
+@app.route('/login_func', methods=["post"])
+def login_func():
+    email = request.form.get("email")
+    password = request.form.get("password")
+
+    try:
+        data, error = supabase.auth.sign_in_with_password({"email": email, "password": password})
+    except:
+        return redirect('/')
+
+    return redirect('/')
+
+@app.route('/signup_func', methods=['post'])
+def signup_func():
+    email = request.form.get("email")
+    password = request.form.get("password")
+
+    try:
+        res = supabase.auth.sign_up(
+            {
+                'email': email,
+                'password': password
+            }
+        )
+    except:
+        return redirect('/signup')
+
+    return redirect('/')
+
+@app.route('/signout')
+def signout_func():
+    res = supabase.auth.sign_out()
+    return redirect('/')
 
 @app.route("/auth")
 def test():
@@ -28,30 +70,6 @@ def test():
 
     while choice != '-1':
         choice = input("Sign Up, Sign In, Sign Out, View Data (1, 2, 3, 4): ")
-
-        if choice == "1":
-            email = input("Email: ")
-            password = input("Password: ")
-            res = supabase.auth.sign_up(
-                {
-                    'email': email,
-                    'password': password
-                }
-            )
-            #print(res)
-        elif choice == '2':
-            email = input("Email: ")
-            password = input("Password: ")
-            data, error = supabase.auth.sign_in_with_password({"email": email, "password": password})
-            print(data)
-            #if error:
-            #    print(error)
-            #    return {'error': error.message}, 400
-        elif choice == '3':
-            res = supabase.auth.sign_out()
-        elif choice == '4':
-            data = supabase.auth.get_user()
-            print(data.user.id)
 
 
 def forward_string():
@@ -80,6 +98,7 @@ def get_weather():
     else:
         print("Error fetching weather data")
         #exit()
+
 
 
     # Call ollama
@@ -112,6 +131,15 @@ def get_preferences():
 
 # Get info for DB
 
+def generate_outfit():
+    # Get weather
+    get_weather()
+    # Get preferences
+    preferences = get_preferences()
+
+    generate_response(requests.Session(), preferences)
+
+    return outfit
 
 if __name__ == "__main__":
     app.run(debug=True)
