@@ -12,6 +12,18 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css?family=Raleway:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800&amp;display=swap"
     />
+    <style>
+      .alert .close {
+        opacity: 0.5; /* Adjust the opacity as needed */
+        color: #cadb1a; /* Grey color */
+        background-color: transparent; /* Transparent background */
+        border: none; /* Remove border */
+        padding: 0; /* Remove padding */
+        padding-left: 30px;
+        font-size: 30px; /* Adjust font size */
+        line-height: 1; /* Adjust line height */
+      }
+    </style>
   </head>
 
   <body>
@@ -21,7 +33,7 @@
     >
       <div class="container">
         <a class="navbar-brand d-flex align-items-center" href="/"
-          ><span>Brand</span></a
+          ><span>Outlify</span></a
         >
       </div>
     </nav>
@@ -38,6 +50,18 @@
             <h2 class="display-6 fw-bold mb-5">
               <span class="underline pb-1"><strong>Login</strong><br /></span>
             </h2>
+            {% block content %}
+            <div class="container">
+                {% for message in get_flashed_messages() %}
+                <div class="alert alert-warning">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                </div>
+                {% endfor %}
+
+                {% block page_content %}{% endblock %}
+            </div>
+            {% endblock %}
             <form method="post" action="{{url_for('login_func')}}" data-bs-theme="light">
               <div class="mb-3">
                 <input
@@ -88,7 +112,7 @@
     </section>
     <footer>
       <div class="container py-4 py-lg-5">
-        <div class="row row-cols-2 row-cols-md-4">
+        <!--<div class="row row-cols-2 row-cols-md-4">
           <div class="col-12 col-md-3">
             <div class="fw-bold d-flex align-items-center mb-2">
               <span>Brand</span>
@@ -105,13 +129,13 @@
               <li><a href="#">Legacy</a></li>
             </ul>
           </div>
-        </div>
+        </div>-->
         <hr />
         <div
           class="text-muted d-flex justify-content-between align-items-center pt-3"
         >
-          <p class="mb-0">Copyright © 2024 Brand</p>
-          <ul class="list-inline mb-0">
+          <p class="mb-0">Copyright © 2024 Outlify</p>
+          <!--<ul class="list-inline mb-0">
             <li class="list-inline-item">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -154,11 +178,21 @@
                 ></path>
               </svg>
             </li>
-          </ul>
+          </ul>-->
         </div>
       </div>
     </footer>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/startup-modern.js') }}"></script>
+
+    
+    <script>
+        $(document).ready(function() {
+            $(".alert .close").on('click', function() {
+                $(this).parent().hide();
+            });
+        });
+    </script>
   </body>
 </html>

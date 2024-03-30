@@ -1,9 +1,10 @@
-from flask import Flask, request, redirect, url_for, render_template
+from flask import Flask, request, redirect, url_for, render_template, flash
 #from postgrest_py import PostgrestClient
 from dotenv import load_dotenv
 import os
 import requests
 from pprint import pprint as pp
+import re
 
 from supabase import create_client, Client
 
@@ -13,6 +14,9 @@ key: str = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
 
 app = Flask(__name__)
+
+secret_key = os.urandom(32)
+app.secret_key = secret_key.hex()
 
 @app.route("/")
 def home():
@@ -28,6 +32,10 @@ def home():
 def signup_page():
     return render_template('signup.html')
 
+@app.route("/preferences")
+def preferences_page():
+    return render_template('preferences.html')
+
 @app.route('/login_func', methods=["post"])
 def login_func():
     email = request.form.get("email")
@@ -36,6 +44,7 @@ def login_func():
     try:
         data, error = supabase.auth.sign_in_with_password({"email": email, "password": password})
     except:
+        flash('Incorrect login')
         return redirect('/')
 
     return redirect('/')
@@ -44,6 +53,12 @@ def login_func():
 def signup_func():
     email = request.form.get("email")
     password = request.form.get("password")
+    location = request.form.get("location")
+    
+    pattern = '^[0-9]{5}(-[0-9]{4})?$'
+    if not re.match(pattern, location):
+        flash('Invalid zip code')
+        return redirect('/signup')
 
     try:
         res = supabase.auth.sign_up(
@@ -53,6 +68,8 @@ def signup_func():
             }
         )
     except:
+        flash('Email may already be in use')
+        flash('Password must be more than 6 characters long')
         return redirect('/signup')
 
     return redirect('/')
