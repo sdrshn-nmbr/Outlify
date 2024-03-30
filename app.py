@@ -45,12 +45,15 @@ def signup_func():
     email = request.form.get("email")
     password = request.form.get("password")
 
-    res = supabase.auth.sign_up(
-        {
-            'email': email,
-            'password': password
-        }
-    )
+    try:
+        res = supabase.auth.sign_up(
+            {
+                'email': email,
+                'password': password
+            }
+        )
+    except:
+        return redirect('/signup')
 
     return redirect('/')
 
