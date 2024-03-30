@@ -20,10 +20,11 @@ def home():
     user = supabase.auth.get_user()
 
     if user:
-        print(user)
+        # print(user)
         return render_template('main.html')
     else:
         return render_template('login.html')
+
     
 @app.route("/signup")
 def signup_page():
@@ -36,7 +37,9 @@ def login_func():
 
     try:
         data, error = supabase.auth.sign_in_with_password({"email": email, "password": password})
-    except:
+    except Exception as e:
+        print("!!!!!!!!!!!!!!!!!!!")
+        print(e)
         return redirect('/')
 
     return redirect('/')
@@ -55,6 +58,14 @@ def signup_func():
         )
     except:
         return redirect('/signup')
+    try:
+        user = supabase.auth.get_user()
+        id = user.user.id
+        id = insert.create_user(supabase, id)
+        print(id)
+    except Exception as e:
+        print("!!!!!!!!!!!!!!!!!!")
+        print(e)
 
     return redirect('/')
 
@@ -161,13 +172,16 @@ def upload():
     # if not user:
     #     return redirect('/')
     uploaded_file = request.files['file']
+    uploaded_file.save("uploads/" + uploaded_file.filename)
+    name = "uploads/" + uploaded_file.filename
     print(uploaded_file)
     try:
-        id = insert.insert(supabase, user, uploaded_file, "new file")
+        id = insert.insert(supabase, user.user.id, name, "working file please please please")
         print(id)
-    except:
-        print("error")
-    
+    except Exception as e:
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print(e)
+    # os.remove(name)
     print(uploaded_file)
     return render_template('main.html')
 
