@@ -7,7 +7,7 @@
       content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
     />
     <title>Pricing - Brand</title>
-    <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css?family=Raleway:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800&amp;display=swap"
@@ -98,7 +98,7 @@
                           <div class="picture-container" style="align-items: center;">
                             <picture>
                               <img
-                                src="hello.png"
+                                src="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}hello.png"
                                 style="padding-top: 0px; position: relative"
                                 width="100%"
                                 height="auto"
@@ -106,7 +106,7 @@
                             </picture>
                             <picture>
                               <img
-                                src="hello.png"
+                                src="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}hello.png"
                                 style="padding-top: 0px; position: relative"
                                 width="100%"
                                 height="auto"
@@ -228,7 +228,7 @@
         </div>
       </div>
     </footer>
-    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
-    <script src="assets/js/startup-modern.js"></script>
+    <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/startup-modern.js') }}"></script>
   </body>
 </html>
