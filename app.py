@@ -139,5 +139,69 @@ def generate_outfit():
 
     return outfit
 
+@app.route('/final')
+def final():
+    #set page to final.html
+
+    return render_template('final.html')
+
+@app.route('/image/<int:image_id>')
+def display_image(image_id):
+    # Get image data from the database
+    image_data = get_image_from_database(image_id)
+    
+    # Return image data as response
+    return send_file(image_data, mimetype='image/jpeg')
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    user = supabase.auth.get_user()
+    print(user)
+    # if not user:
+    #     return redirect('/')
+    uploaded_file = request.files['file']
+    print(uploaded_file)
+    try:
+        id = insert.insert(supabase, user, uploaded_file, "new file")
+        print(id)
+    except:
+        print("error")
+    
+    print(uploaded_file)
+    return render_template('main.html')
+
+@app.route('/evan')
+def evan():
+    user = supabase.auth.get_user()
+    try:
+        print("!!!!!!!!!!!!!!!!!!!!!")
+        print(user.user.id)
+    except Exception as e:
+        print(e)
+        print("error")
+    return render_template('main.html')
+
+@app.route('/insertMeth')
+def insertMeth():
+    try:
+        user = supabase.auth.get_user()
+        id = user.user.id
+        id = insert.insert(supabase, id, "hello.png", "new file")
+        print(id)
+    except Exception as e:
+        print("!!!!!!!!!!!!!!!!!!")
+        print(e)
+    return render_template('main.html')
+
+@app.route('/login_evan')
+def login_evan():
+
+    try:
+        data, error = supabase.auth.sign_in_with_password({"email": "evanlmiller20@gmail.com", "password": "password1"})
+    except:
+        return redirect('/')
+
+    return  render_template('main.html')
+
 if __name__ == "__main__":
     app.run(debug=True)
