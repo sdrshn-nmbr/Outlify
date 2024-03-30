@@ -66,10 +66,7 @@ def signup_func():
         res = supabase.auth.sign_up(
             {
                 'email': email,
-                'password': password,
-                'data': {
-                    'location': location
-                }
+                'password': password
             }
         )
 
