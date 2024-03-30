@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import os
 import requests
 from pprint import pprint as pp
+import insert
 
 from supabase import create_client, Client
 
