@@ -34,6 +34,8 @@ def signup_page():
 
 @app.route("/preferences")
 def preferences_page():
+    user = supabase.auth.get_user()
+    print(user.user)
     return render_template('preferences.html')
 
 @app.route('/login_func', methods=["post"])
@@ -64,9 +66,13 @@ def signup_func():
         res = supabase.auth.sign_up(
             {
                 'email': email,
-                'password': password
+                'password': password,
+                'data': {
+                    'location': location
+                }
             }
         )
+
     except:
         flash('Email may already be in use')
         flash('Password must be more than 6 characters long')
@@ -96,7 +102,6 @@ def get_weather():
     zipcode = input("Enter Zipcode: ")
     api_key = "882d7c4617b36d2101b88c388111c3a0"
     url = f"http://api.openweathermap.org/data/2.5/weather?zip={zipcode},us&appid={api_key}&units=imperial"
-    #print("Hello")
     response = requests.get(url)
     weather_data = response.json()
 
