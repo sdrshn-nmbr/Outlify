@@ -7,7 +7,7 @@
       content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
     />
     <title>Sign up</title>
-    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css?family=Raleway:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800&amp;display=swap"
@@ -22,20 +22,7 @@
       <div class="container">
         <a class="navbar-brand d-flex align-items-center" href="/"
           ><span>Brand</span></a
-        ><button
-          data-bs-toggle="collapse"
-          class="navbar-toggler"
-          data-bs-target="#navcol-1"
         >
-          <span class="visually-hidden">Toggle navigation</span
-          ><span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navcol-1">
-          <ul class="navbar-nav mx-auto"></ul>
-          <a class="btn btn-primary shadow" role="button" href="auth"
-            >Sign up</a
-          >
-        </div>
       </div>
     </nav>
     <section class="py-4 py-md-5 my-5">
@@ -44,14 +31,14 @@
           <div class="col-md-6 text-center">
             <img
               class="img-fluid w-100"
-              src="assets/img/illustrations/register.svg"
+              src="{{ url_for('static', filename='img/illustrations/register.svg') }}"
             />
           </div>
           <div class="col-md-5 col-xl-4 text-center text-md-start">
             <h2 class="display-6 fw-bold mb-5">
               <span class="underline pb-1"><strong>Sign up</strong></span>
             </h2>
-            <form method="post" data-bs-theme="light">
+            <form method="post" action="{{url_for('signup_func')}}" data-bs-theme="light">
               <div class="mb-3">
                 <input
                   class="shadow-sm form-control"
@@ -68,14 +55,6 @@
                   placeholder="Password"
                 />
               </div>
-              <div class="mb-3">
-                <input
-                  class="shadow-sm form-control"
-                  type="password"
-                  name="password_repeat"
-                  placeholder="Repeat Password"
-                />
-              </div>
               <div class="mb-5">
                 <button class="btn btn-primary shadow" type="submit">
                   Create account
@@ -84,7 +63,7 @@
             </form>
             <p class="text-muted">
               Have an account?
-              <a href="login.html"
+              <a href="/"
                 >Log in&nbsp;<svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="1em"
@@ -179,7 +158,7 @@
         </div>
       </div>
     </footer>
-    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
-    <script src="assets/js/startup-modern.js"></script>
+    <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/startup-modern.js') }}"></script>
   </body>
 </html>
