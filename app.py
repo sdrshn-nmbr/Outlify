@@ -80,6 +80,7 @@ def get_weather():
         #exit()
 
 
+
     # Call ollama
 def generate_response(session, message):
     url_llama = "http://localhost:11434/api/chat"
@@ -110,6 +111,15 @@ def get_preferences():
 
 # Get info for DB
 
+def generate_outfit():
+    # Get weather
+    get_weather()
+    # Get preferences
+    preferences = get_preferences()
+
+    generate_response(requests.Session(), preferences)
+
+    return outfit
 
 if __name__ == "__main__":
     app.run(debug=True)
