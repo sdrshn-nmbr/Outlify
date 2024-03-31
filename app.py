@@ -294,14 +294,14 @@ def final():
     print("Enter the function")
     a = request.form.get("message")
     zipcode = request.form.get("zipcode")
-    if a == None:
+    if a is None:
         a = "casual"
-    if zipcode == None:
-        zipcode = "47906"
+    if zipcode is None:
+        zipcode = 47906
     print(zipcode)
     print(a)
     print("ENter the function")
-    output = generate_response(". Preference is " + a, zipcode + ". ")
+    output = generate_response(". Preference is " + a, zipcode)
     print("Response generated")
     id = supabase.auth.get_user().user.id
     image_path1 = id + "_" + str(output[0]) + ".jpg"
