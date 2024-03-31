@@ -4,4 +4,4 @@ An app that makes you look good with your own clothes!
 Setup:
 
 - Download Ollama from https://ollama.com/
-- 
+- ```pip install -r requirements.txt```
