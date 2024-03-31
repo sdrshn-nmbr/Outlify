@@ -25,6 +25,15 @@ def home():
     else:
         return render_template('login.html')
 
+@app.route("/preferences")
+def preferences():
+    user = supabase.auth.get_user()
+
+    if user:
+        # print(user)
+        return render_template('preferences.html')
+    else:
+        return render_template('login.html')
     
 @app.route("/signup")
 def signup_page():
@@ -180,9 +189,10 @@ def upload():
     uploaded_file = request.files['file']
     uploaded_file.save("uploads/" + uploaded_file.filename)
     name = "uploads/" + uploaded_file.filename
+    description = llava_scan(name)
     print(uploaded_file)
     try:
-        id = insert.insert(supabase, user.user.id, name, "working file please please please")
+        id = insert.insert(supabase, user.user.id, name, description)
         print(id)
     except Exception as e:
         print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
