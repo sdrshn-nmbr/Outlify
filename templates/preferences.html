@@ -6,8 +6,11 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
     />
-    <title>Contacts - Brand</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" />
+    <title>Preferences</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}"
+    />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css?family=Raleway:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800&amp;display=swap"
@@ -82,9 +85,22 @@
         <div class="row d-flex justify-content-center">
           <div class="col-md-6">
             <div>
-              <form class="p-3 p-xl-4" method="post" data-bs-theme="light">
+              <form
+                class="p-3 p-xl-4"
+                method="post"
+                action="{{url_for('weather')}}"
+                data-bs-theme="light"
+              >
                 <div class="mb-3"></div>
-                <div class="mb-3"></div>
+                <div class="mb-3">
+                  <textarea
+                    class="shadow form-control"
+                    id="message-1"
+                    name="zipcode"
+                    rows="1"
+                    placeholder="Zip Code"
+                  ></textarea>
+                </div>
                 <div class="mb-3">
                   <textarea
                     class="shadow form-control"
