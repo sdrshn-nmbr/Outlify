@@ -215,26 +215,34 @@ def generate_response(inputs):
     result_sim_list = []
     result_sim_names = []
     result_sim_list_bottom = []
-    result_sim_names_bottom = []
+    # result_sim_names_bottom = []
     # print(db_return_raw)
     for item in db_return_raw:
         a = item["description"]
-        if "top" in a:
+        result_sim_names.append(item["id"])
+        if "top" in a.lower():
             result_sim_list.append(name_similarity(str(a), str(result)))
-            result_sim_names.append(item["id"])
-        elif "bottom" in a:
+            result_sim_list_bottom.append(0)
+        elif "bottom" in a.lower():
             result_sim_list_bottom.append(name_similarity(str(a), str(result)))
-            result_sim_names_bottom.append(item["id"])
+            result_sim_list.append(0)
         else:
-
-            
-    # print("Did the end get here ?!?!?!?")
-    # print(result_sim_list)
-    highest_index_top = result_sim_list.index(max(result_sim_list))
-    highest_index_bottom = result_sim_list_bottom.index(max(result_sim_list_bottom))
-    # print(highest_indices)
-    display_ids = [result_sim_names[highest_index_top], result_sim_names[highest_index_bottom]]
-    # print(display_ids)
+            result_sim_list_bottom.append(name_similarity(str(a), str(result)))
+            result_sim_list.append(0)
+    
+    if len(result_sim_list) != 0 and len(result_sim_list_bottom) != 0:
+        
+        # print("Did the end get here ?!?!?!?")
+        # print(result_sim_list)
+        highest_index_top = result_sim_list.index(max(result_sim_list))
+        highest_index_bottom = result_sim_list_bottom.index(max(result_sim_list_bottom))
+        # print(highest_indices)
+        display_ids = [result_sim_names[highest_index_top], result_sim_names[highest_index_bottom]]
+        print(highest_index_top, highest_index_bottom)
+        # print(display_ids)
+    else:
+        raise Exception("Sufficient tops or bottoms NOT found")
+    
     return display_ids
 
 
