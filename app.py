@@ -30,6 +30,7 @@ def home():
     else:
         return render_template("login.html")
 
+
 @app.route("/preferences")
 def preferences():
     user = supabase.auth.get_user()
@@ -39,7 +40,7 @@ def preferences():
         return render_template("preferences.html")
     else:
         return render_template("login.html")
-    
+
 
 @app.route("/signup")
 def signup_page():
@@ -98,7 +99,7 @@ def image_to_base64(image_path):
             img_data = img_file.read()
             # Encode the image data to base64
             base64_data = base64.b64encode(img_data).decode("utf-8")
-            return base64_data
+            return str(base64_data)
     except FileNotFoundError:
         print("Error: File not found.")
     except Exception as e:
@@ -106,61 +107,57 @@ def image_to_base64(image_path):
 
 
 def llava_scan(path):
-    url_llama = "http://localhost:11434/api/chat"
+    url_llama = "http://localhost:11434/api/generate"
 
     base64_image = image_to_base64(path)
-
-    prompt = (
-        f"{path} classify this as a clothing item for top or bottom - one word answer"
-    )
-
-    messages = []
-    messages.append({"role": "user", "content": prompt})
+    print("WOmp womp womp womp womp")
+    prompt = "Classify this as a clothing item for top or bottom - one word answer"
 
     payload = {
-        "model": "tinyllava",
-        "messages": messages,
+        "model": "llava",
+        "prompt": prompt,
         "stream": False,
-        "images": [f"{base64_image}"],
+        "images": [base64_image],
+        "keep_alive": 1000,
     }
 
     # Send POST request
     response = requests.post(url_llama, json=payload)
+    print("WOmp womp womp womp womp1")
 
     # Check response
-    if response.status_code == 200:
-        result1 = response.json()["message"]["content"]
+    if response.status_code == 200 or response.status_code == 201:
+        result1 = response.json()["response"]
+        # print(response.json())
     else:
-        return f"Request failed with status code: {response.status_code}"
+        return f"Request failed with status code: {response.status_code} 111111"
 
-    prompt = f"{path} give a one sentence description of this clothing item"
-
-    messages = []
-    messages.append({"role": "user", "content": prompt})
+    prompt = "Give a one sentence description of this clothing item"
 
     payload = {
         "model": "llava",
-        "messages": messages,
+        "prompt": prompt,
         "stream": False,
-        "images": [f"{base64_image}"],
+        "images": [base64_image],
     }
 
     response = requests.post(url_llama, json=payload)
+    print("WOmp womp womp womp womp2")
 
-    if response.status_code == 200:
-        result2 = response.json()["message"]["content"]
+    if response.status_code == 200 or response.status_code == 201:
+        result2 = response.json()["response"]
+        # print(response.json())
     else:
-        return f"Request failed with status code: {response.status_code}"
+        return f"Request failed with status code: {response.status_code} 222222"
 
     result = result1 + ":" + result2
-    print(result)
     return result
 
 
 # Connect to weather API
 @app.route("/weather")
 def get_weather():
-    zipcode = input("Enter Zipcode: ")
+    zipcode = 10001
     api_key = "882d7c4617b36d2101b88c388111c3a0"
     url = f"http://api.openweathermap.org/data/2.5/weather?zip={zipcode},us&appid={api_key}&units=imperial"
     response = requests.get(url)
@@ -190,45 +187,44 @@ def get_weather():
     """
 
 
-def generate_response(preferences):
-    url_llama = "http://localhost:11434/api/chat"
-    prompt = get_weather() + preferences
+def generate_response(inputs):
+    url_llama = "http://localhost:11434/api/generate"
+    prompt = get_weather() + inputs
     prompt += " Choose just 1 top and 1 bottom from the following options that go well together."
     db_return_raw = insert.download_all(supabase, supabase.auth.get_user().user.id)
     db_return = str(db_return_raw)
-
+    print("downloaded")
     prompt += db_return
 
     prompt += "\nChoose one labeled as a top and one labeled as a bottom. Respond in the same format as the input list. Do not output any other information or any wrong information."
 
-    messages = []
-    messages.append({"role": "user", "content": prompt})
-
     payload = {
         "model": "mistral",
-        "messages": messages,
+        "prompt": prompt,
         "stream": False,
     }
-
+    print("did it get here")
     # Send POST request
     response = requests.post(url_llama, json=payload)
     # Check response
     if response.status_code != 200:
         return f"Request failed with status code: {response.status_code}"
 
-    result = response.json()["message"]["content"]
-
+    result = response.json()["response"]
+    print(result)
     result_sim_list = []
     result_sim_names = []
-
+    print(db_return_raw)
     for item in db_return_raw:
-        a = item["name"]
-        result_sim_list.append(name_similarity(result_sim_list, result))
+        a = item["description"]
+        result_sim_list.append(name_similarity(str(a), str(result)))
         result_sim_names.append(item["id"])
-
-    highest_indices = heapq.nlargest(2, range(len(a)), key=lambda i: a[i])
-    display_ids = [result_sim_names[i] for i in highest_indices]
-
+    print("Did the end get here ?!?!?!?")
+    print(result_sim_list)
+    highest_indices = heapq.nlargest(2, range(len(result_sim_list)), key=lambda i: result_sim_list[i])
+    print(highest_indices)
+    display_ids = [result_sim_names[i] for i in (highest_indices)]
+    print(display_ids)
     return display_ids
 
 
@@ -236,6 +232,8 @@ def name_similarity(a, b):
     # Returns score for string similarity from 0 to 1
     a = a.lower()
     b = b.lower()
+    print("A" + a)
+    print("B" +b)
     if a == b:
         return 1
     elif a in b or b in a:
@@ -244,30 +242,45 @@ def name_similarity(a, b):
         return (SequenceMatcher(None, a, b).ratio()) / 2
 
 
-# Get preferences (outfit type)
-def get_preferences():
-    outfit_type = input("Enter 1 for Casual, 2 for Semi-formal, 3 for Formal")
-    return outfit_type
+# # Get preferences (outfit type)
+# def get_preferences():
+#     outfit_type = input("Enter 1 for Casual, 2 for Semi-formal, 3 for Formal")
+#     return outfit_type
 
 
 # Get info for DB
 
 
-def generate_outfit():
-    # Get weather
-    get_weather()
-    # Get preferences
-    preferences = get_preferences()
+# def generate_outfit():
+#     # Get weather
+#     get_weather()
+#     # Get preferences
+#     name = get_preferences()
 
-    generate_response(requests.Session(), preferences)
+#     generate_response(requests.Session(), name)
 
-    return outfit
+#     return outfit
 
 
 @app.route("/final")
 def final():
     # set page to final.html
-
+    print("ENter the function")
+    output = generate_response('cold')
+    print("Response generated")
+    id = supabase.auth.get_user().user.id
+    image_path1 = id + "_" + str(output[0]) + ".jpg"
+    image_path2 = id + "_" + str(output[1]) + ".jpg"
+    try:
+        insert.download(supabase, image_path1, "uploads/top.jpg")
+    except Exception as e:
+        print("error1")
+        print(e)
+    try:
+        insert.download(supabase, image_path2, "uploads/bottom.jpg")
+    except Exception as e:
+        print("error2")
+        print(e)
     return render_template("final.html")
 
 
@@ -279,6 +292,7 @@ def display_top():
     # Return image data as response
     return image_data
 
+
 @app.route("/uploads/bottom")
 def display_bottom():
     # Get image data from the database
@@ -286,25 +300,24 @@ def display_bottom():
         image_data = f.read()
     return image_data
 
+
 @app.route("/upload", methods=["POST"])
 def upload():
     user = supabase.auth.get_user()
-    print(user)
     # if not user:
     #     return redirect('/')
     uploaded_file = request.files["file"]
     uploaded_file.save("uploads/" + uploaded_file.filename)
     name = "uploads/" + uploaded_file.filename
-    print(name)
     description = llava_scan(name)
     try:
+        print("Did this work")
         id = insert.insert(supabase, user.user.id, name, description)
         print(id)
     except Exception as e:
-        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        print(e.message)
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`1`1")
+        print(e)
     # os.remove(name)
-    print(uploaded_file)
     return render_template("main.html")
 
 
