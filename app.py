@@ -286,6 +286,10 @@ def final():
     print("ENter the function")
     a = request.form.get("message")
     zipcode = request.form.get("zipcode")
+    if a == None:
+        a = "casual"
+    if zipcode == None:
+        zipcode = "60601"
     print(zipcode)
     print(a)
     print("ENter the function")
