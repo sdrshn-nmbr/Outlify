@@ -1,4 +1,5 @@
 from flask import Flask, request, redirect, url_for, render_template
+from difflib import SequenceMatcher
 
 # from postgrest_py import PostgrestClient
 from dotenv import load_dotenv
@@ -23,43 +24,42 @@ def home():
 
     if user:
         # print(user)
-        return render_template('main.html')
+        return render_template("main.html")
     else:
-        return render_template('login.html')
+        return render_template("login.html")
 
-    
+
 @app.route("/signup")
 def signup_page():
-    return render_template('signup.html')
+    return render_template("signup.html")
 
-@app.route('/login_func', methods=["post"])
+
+@app.route("/login_func", methods=["post"])
 def login_func():
     email = request.form.get("email")
     password = request.form.get("password")
 
     try:
-        data, error = supabase.auth.sign_in_with_password({"email": email, "password": password})
+        data, error = supabase.auth.sign_in_with_password(
+            {"email": email, "password": password}
+        )
     except Exception as e:
         print("!!!!!!!!!!!!!!!!!!!")
         print(e)
-        return redirect('/')
+        return redirect("/")
 
-    return redirect('/')
+    return redirect("/")
 
-@app.route('/signup_func', methods=['post'])
+
+@app.route("/signup_func", methods=["post"])
 def signup_func():
     email = request.form.get("email")
     password = request.form.get("password")
 
     try:
-        res = supabase.auth.sign_up(
-            {
-                'email': email,
-                'password': password
-            }
-        )
+        res = supabase.auth.sign_up({"email": email, "password": password})
     except:
-        return redirect('/signup')
+        return redirect("/signup")
     try:
         user = supabase.auth.get_user()
         id = user.user.id
@@ -69,19 +69,60 @@ def signup_func():
         print("!!!!!!!!!!!!!!!!!!")
         print(e)
 
-    return redirect('/')
+    return redirect("/")
 
-@app.route('/signout')
+
+@app.route("/signout")
 def signout_func():
     res = supabase.auth.sign_out()
-    return redirect('/')
+    return redirect("/")
 
-@app.route("/auth")
-def test():
-    choice = 0
 
-    while choice != "-1":
-        choice = input("Sign Up, Sign In, Sign Out, View Data (1, 2, 3, 4): ")
+def llava_scan(path):
+    url_llama = "http://localhost:11434/api/chat"
+    prompt = (
+        f"{path} classify this as a clothing item for top or bottom - one word answer"
+    )
+
+    messages = []
+    messages.append({"role": "user", "content": prompt})
+
+    payload = {
+        "model": "llava",
+        "messages": messages,
+        "stream": False,
+    }
+
+    # Send POST request
+    response = requests.post(url_llama, json=payload)
+
+    # Check response
+    if response.status_code == 200:
+        result1 = response.json()["message"]["content"]
+    else:
+        return f"Request failed with status code: {response.status_code}"
+
+    prompt = f"{path} give a one sentence description of this clothing item"
+
+    messages = []
+    messages.append({"role": "user", "content": prompt})
+
+    payload = {
+        "model": "llava",
+        "messages": messages,
+        "stream": False,
+    }
+
+    response = requests.post(url_llama, json=payload)
+
+    if response.status_code == 200:
+        result2 += response.json()["message"]["content"]
+    else:
+        return f"Request failed with status code: {response.status_code}"
+
+    result = '["' + result1 + '","' + result2 + '"]'
+
+    return result
 
 
 # Connect to weather API
@@ -101,23 +142,22 @@ def get_weather():
         print(
             f"Temperature: {temperature} Farenheit\n Humidity: {humidity}%\n Description: {description}"
         )
-        prompt = f"This is the weather in my city: Temperature: {temperature}° Farenheit\n Humidity: {humidity}%\n Description: {description}"
+        prompt = f"This is the weather in my city: Temperature: {temperature} Farenheit\n Humidity: {humidity}%\n Description: {description}"
         return prompt
     else:
         print("Error fetching weather data")
-        #exit()
 
 
-
-    # Call ollama
-def generate_response(session, message):
+def generate_response(preferences):
     url_llama = "http://localhost:11434/api/chat"
-    prompt = get_weather() + " These are my preferences for today: " + preferences
+    prompt = get_weather() + preferences
+    db_return = insert.download_all(supabase, supabase.auth.get_user().user.id)
+
     messages = []
     messages.append({"role": "user", "content": prompt})
 
     payload = {
-        "model": "llama2-uncensored",
+        "model": "mistral",
         "messages": messages,
         "stream": False,
     }
@@ -128,9 +168,22 @@ def generate_response(session, message):
     # Check response
     if response.status_code == 200:
         result = response.json()["message"]["content"]
+        print(result)
         return result
     else:
         return f"Request failed with status code: {response.status_code}"
+
+
+def name_similarity(a, b):
+    # Returns score for string similarity from 0 to 1
+    a = a.lower()
+    b = b.lower()
+    if a == b:
+        return 1
+    elif a in b or b in a:
+        return (1 + SequenceMatcher(None, a, b).ratio()) / 2
+    else:
+        return (SequenceMatcher(None, a, b).ratio()) / 2
 
 
 # Get preferences (outfit type)
@@ -140,6 +193,7 @@ def get_preferences():
 
 
 # Get info for DB
+
 
 def generate_outfit():
     # Get weather
@@ -151,41 +205,47 @@ def generate_outfit():
 
     return outfit
 
-@app.route('/final')
+
+@app.route("/final")
 def final():
-    #set page to final.html
+    # set page to final.html
 
-    return render_template('final.html')
+    return render_template("final.html")
 
-@app.route('/image/<int:image_id>')
+
+@app.route("/image/<int:image_id>")
 def display_image(image_id):
     # Get image data from the database
     image_data = get_image_from_database(image_id)
-    
-    # Return image data as response
-    return send_file(image_data, mimetype='image/jpeg')
 
-@app.route('/upload', methods=['POST'])
+    # Return image data as response
+    return send_file(image_data, mimetype="image/jpeg")
+
+
+@app.route("/upload", methods=["POST"])
 def upload():
     user = supabase.auth.get_user()
     print(user)
     # if not user:
     #     return redirect('/')
-    uploaded_file = request.files['file']
+    uploaded_file = request.files["file"]
     uploaded_file.save("uploads/" + uploaded_file.filename)
     name = "uploads/" + uploaded_file.filename
     print(uploaded_file)
     try:
-        id = insert.insert(supabase, user.user.id, name, "working file please please please")
+        id = insert.insert(
+            supabase, user.user.id, name, "working file please please please"
+        )
         print(id)
     except Exception as e:
         print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         print(e)
     # os.remove(name)
     print(uploaded_file)
-    return render_template('main.html')
+    return render_template("main.html")
 
-@app.route('/evan')
+
+@app.route("/evan")
 def evan():
     user = supabase.auth.get_user()
     try:
@@ -194,9 +254,10 @@ def evan():
     except Exception as e:
         print(e)
         print("error")
-    return render_template('main.html')
+    return render_template("main.html")
 
-@app.route('/insertMeth')
+
+@app.route("/insertMeth")
 def insertMeth():
     try:
         user = supabase.auth.get_user()
@@ -206,17 +267,21 @@ def insertMeth():
     except Exception as e:
         print("!!!!!!!!!!!!!!!!!!")
         print(e)
-    return render_template('main.html')
+    return render_template("main.html")
 
-@app.route('/login_evan')
+
+@app.route("/login_evan")
 def login_evan():
 
     try:
-        data, error = supabase.auth.sign_in_with_password({"email": "evanlmiller20@gmail.com", "password": "password1"})
+        data, error = supabase.auth.sign_in_with_password(
+            {"email": "evanlmiller20@gmail.com", "password": "password1"}
+        )
     except:
-        return redirect('/')
+        return redirect("/")
 
-    return  render_template('main.html')
+    return render_template("main.html")
+
 
 if __name__ == "__main__":
     app.run(debug=True)
