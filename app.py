@@ -1,5 +1,7 @@
 from flask import Flask, request, redirect, url_for, render_template
 from difflib import SequenceMatcher
+import base64
+from PIL import Image
 
 # from postgrest_py import PostgrestClient
 from dotenv import load_dotenv
@@ -7,6 +9,7 @@ import os
 import requests
 from pprint import pprint as pp
 import insert
+import heapq
 
 from supabase import create_client, Client
 
@@ -77,11 +80,26 @@ def signout_func():
     return redirect("/")
 
 
+def image_to_base64(image_path):
+    try:
+        # Open the image file
+        with open(image_path, "rb") as img_file:
+            # Read the image data
+            img_data = img_file.read()
+            # Encode the image data to base64
+            base64_data = base64.b64encode(img_data).decode("utf-8")
+            return base64_data
+    except FileNotFoundError:
+        print("Error: File not found.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+
 def llava_scan(path):
     url_llama = "http://localhost:11434/api/chat"
-    
+
     base64_image = image_to_base64(path)
-    
+
     prompt = (
         f"{path} classify this as a clothing item for top or bottom - one word answer"
     )
@@ -93,7 +111,7 @@ def llava_scan(path):
         "model": "llava",
         "messages": messages,
         "stream": False,
-        "images": [f"{base64_image}"]
+        "images": [f"{base64_image}"],
     }
 
     # Send POST request
@@ -114,7 +132,7 @@ def llava_scan(path):
         "model": "llava",
         "messages": messages,
         "stream": False,
-        "images": [f"{base64_image}"]
+        "images": [f"{base64_image}"],
     }
 
     response = requests.post(url_llama, json=payload)
@@ -151,30 +169,27 @@ def get_weather():
     else:
         print("Error fetching weather data")
 
-
-import base64
-from PIL import Image
-
-
-def image_to_base64(image_path):
-    try:
-        # Open the image file
-        with open(image_path, "rb") as img_file:
-            # Read the image data
-            img_data = img_file.read()
-            # Encode the image data to base64
-            base64_data = base64.b64encode(img_data).decode("utf-8")
-            return base64_data
-    except FileNotFoundError:
-        print("Error: File not found.")
-    except Exception as e:
-        print(f"An error occurred: {e}")
+    """
+    db_return =
+    [
+        {id: '1', name: 'Top:Black crewneck t-shirt'},
+        {id: '2', name: 'Top:White V-neck t-shirt'},
+        {
+        ...
+    ]
+    """
 
 
 def generate_response(preferences):
     url_llama = "http://localhost:11434/api/chat"
     prompt = get_weather() + preferences
-    db_return = insert.download_all(supabase, supabase.auth.get_user().user.id)
+    prompt += " Choose just 1 top and 1 bottom from the following options that go well together."
+    db_return_raw = insert.download_all(supabase, supabase.auth.get_user().user.id)
+    db_return = str(db_return_raw)
+
+    prompt += db_return
+
+    prompt += "\nChoose one labeled as a top and one labeled as a bottom. Respond in the same format as the input list. Do not output any other information or any wrong information."
 
     messages = []
     messages.append({"role": "user", "content": prompt})
@@ -187,14 +202,24 @@ def generate_response(preferences):
 
     # Send POST request
     response = requests.post(url_llama, json=payload)
-
     # Check response
-    if response.status_code == 200:
-        result = response.json()["message"]["content"]
-        print(result)
-        return result
-    else:
+    if response.status_code != 200:
         return f"Request failed with status code: {response.status_code}"
+
+    result = response.json()["message"]["content"]
+
+    result_sim_list = []
+    result_sim_names = []
+
+    for item in db_return_raw:
+        a = item["name"]
+        result_sim_list.append(name_similarity(result_sim_list, result))
+        result_sim_names.append(item["id"])
+
+    highest_indices = heapq.nlargest(2, range(len(a)), key=lambda i: a[i])
+    display_ids = [result_sim_names[i] for i in highest_indices]
+
+    return display_ids
 
 
 def name_similarity(a, b):

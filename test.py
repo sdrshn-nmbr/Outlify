@@ -114,6 +114,8 @@ def generate_response(preferences):
 
 
 from difflib import SequenceMatcher
+
+
 def name_similarity(a, b):
     # Returns score for string similarity from 0 to 1
     a = a.lower()
@@ -127,3 +129,5 @@ def name_similarity(a, b):
 
 
 generate_response(" ")
+
+
