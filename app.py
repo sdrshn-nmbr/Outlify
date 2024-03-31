@@ -10,9 +10,8 @@ import insert
 
 from supabase import create_client, Client
 
-load_dotenv()
-url: str = os.environ.get("SUPABASE_URL")
-key: str = os.environ.get("SUPABASE_KEY")
+url = "https://rzdyvqcuzbdcaibdrypw.supabase.co"
+key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6ZHl2cWN1emJkY2FpYmRyeXB3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTE4MTQ1MzksImV4cCI6MjAyNzM5MDUzOX0.pqHVSybnPnXseAdDJ3bhTWUsmq7n3j-iGFRt_R4RnQQ"
 supabase: Client = create_client(url, key)
 
 app = Flask(__name__)
@@ -80,6 +79,9 @@ def signout_func():
 
 def llava_scan(path):
     url_llama = "http://localhost:11434/api/chat"
+    
+    base64_image = image_to_base64(path)
+    
     prompt = (
         f"{path} classify this as a clothing item for top or bottom - one word answer"
     )
@@ -91,6 +93,7 @@ def llava_scan(path):
         "model": "llava",
         "messages": messages,
         "stream": False,
+        "images": [f"{base64_image}"]
     }
 
     # Send POST request
@@ -111,17 +114,18 @@ def llava_scan(path):
         "model": "llava",
         "messages": messages,
         "stream": False,
+        "images": [f"{base64_image}"]
     }
 
     response = requests.post(url_llama, json=payload)
 
     if response.status_code == 200:
-        result2 += response.json()["message"]["content"]
+        result2 = response.json()["message"]["content"]
     else:
         return f"Request failed with status code: {response.status_code}"
 
-    result = '["' + result1 + '","' + result2 + '"]'
-
+    result = result1 + ":" + result2
+    print(result)
     return result
 
 
@@ -146,6 +150,25 @@ def get_weather():
         return prompt
     else:
         print("Error fetching weather data")
+
+
+import base64
+from PIL import Image
+
+
+def image_to_base64(image_path):
+    try:
+        # Open the image file
+        with open(image_path, "rb") as img_file:
+            # Read the image data
+            img_data = img_file.read()
+            # Encode the image data to base64
+            base64_data = base64.b64encode(img_data).decode("utf-8")
+            return base64_data
+    except FileNotFoundError:
+        print("Error: File not found.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 
 def generate_response(preferences):
@@ -231,15 +254,14 @@ def upload():
     uploaded_file = request.files["file"]
     uploaded_file.save("uploads/" + uploaded_file.filename)
     name = "uploads/" + uploaded_file.filename
-    print(uploaded_file)
+    print(name)
+    description = llava_scan(name)
     try:
-        id = insert.insert(
-            supabase, user.user.id, name, "working file please please please"
-        )
+        id = insert.insert(supabase, user.user.id, name, description)
         print(id)
     except Exception as e:
         print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        print(e)
+        print(e.message)
     # os.remove(name)
     print(uploaded_file)
     return render_template("main.html")
