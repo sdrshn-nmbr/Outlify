@@ -291,13 +291,13 @@ def name_similarity(a, b):
 def final():
 
     # set page to final.html
-    print("ENter the function")
+    print("Enter the function")
     a = request.form.get("message")
     zipcode = request.form.get("zipcode")
     if a == None:
         a = "casual"
     if zipcode == None:
-        zipcode = "60601"
+        zipcode = "47906"
     print(zipcode)
     print(a)
     print("ENter the function")
