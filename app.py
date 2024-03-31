@@ -236,7 +236,7 @@ def final():
     return render_template("final.html")
 
 
-@app.route("/image/<int:image_id>")
+@app.route("/image/<string:image_id>")
 def display_image(image_id):
     # Get image data from the database
     image_data = get_image_from_database(image_id)
