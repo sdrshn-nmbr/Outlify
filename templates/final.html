@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
     />
-    <title>Pricing - Brand</title>
+    <title>Outfit</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" />
     <link
       rel="stylesheet"
@@ -20,7 +20,7 @@
       id="mainNav"
     >
       <div class="container">
-        <a class="navbar-brand d-flex align-items-center" href="main.html"
+        <a class="navbar-brand d-flex align-items-center" href="/"
           ><span>Outlify</span></a
         ><button
           data-bs-toggle="collapse"
@@ -34,8 +34,8 @@
           <ul class="navbar-nav mx-auto">
             <li class="nav-item"></li>
           </ul>
-          <a class="btn btn-primary shadow" role="button" href="auth"
-            >Sign up</a
+          <a class="btn btn-primary shadow" role="button" href="signout"
+            >Sign out</a
           >
           <ul class="navbar-nav">
             <li class="nav-item"></li>
@@ -46,17 +46,6 @@
             <li class="nav-item"></li>
             <li class="nav-item"></li>
             <li class="nav-item"></li>
-          </ul>
-          <ul class="navbar-nav">
-            <li class="nav-item">
-              <a class="nav-link active" href="#">First Item</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Second Item</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Third Item</a>
-            </li>
           </ul>
         </div>
       </div>
@@ -98,7 +87,7 @@
                           <div class="picture-container" style="align-items: center;">
                             <picture>
                               <img
-                                src="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}hello.png"
+                                src="uploads\top"
                                 style="padding-top: 0px; position: relative"
                                 width="100%"
                                 height="auto"
@@ -106,7 +95,7 @@
                             </picture>
                             <picture>
                               <img
-                                src="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}hello.png"
+                                src="uploads\bottom"
                                 style="padding-top: 0px; position: relative"
                                 width="100%"
                                 height="auto"
@@ -149,7 +138,7 @@
             <a
               class="btn btn-light fs-5 py-2 px-4"
               role="button"
-              href="preferences.html"
+              href="preferences"
               >Re-outlify</a
             >
           </div>
@@ -161,7 +150,7 @@
         <div class="row row-cols-2 row-cols-md-4">
           <div class="col-12 col-md-3">
             <div class="fw-bold d-flex align-items-center mb-2">
-              <span>Brand</span>
+              <span>Outlify</span>
             </div>
           </div>
           <div class="col">
@@ -180,7 +169,7 @@
         <div
           class="text-muted d-flex justify-content-between align-items-center pt-3"
         >
-          <p class="mb-0">Copyright © 2024 Brand</p>
+          <p class="mb-0">Copyright © 2024 Outlify</p>
           <ul class="list-inline mb-0">
             <li class="list-inline-item">
               <svg
