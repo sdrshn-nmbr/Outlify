@@ -156,11 +156,8 @@ def llava_scan(path):
     result = result1 + ":" + result2
     return result
 
-
-# Connect to weather API
-@app.route("/weather")
-def get_weather():
-    zipcode = 10001
+def get_weather(zip):
+    zipcode = zip
     api_key = "882d7c4617b36d2101b88c388111c3a0"
     url = f"http://api.openweathermap.org/data/2.5/weather?zip={zipcode},us&appid={api_key}&units=imperial"
     response = requests.get(url)
@@ -190,9 +187,9 @@ def get_weather():
     """
 
 
-def generate_response(inputs):
+def generate_response(inputs, zip):
     url_llama = "http://localhost:11434/api/generate"
-    prompt = get_weather() + inputs
+    prompt = get_weather(zip) + inputs
     prompt += " Choose just 1 top and 1 bottom from the following options that go well together."
     db_return_raw = insert.download_all(supabase, supabase.auth.get_user().user.id)
     db_return = str(db_return_raw)
@@ -200,7 +197,7 @@ def generate_response(inputs):
     prompt += db_return
 
     prompt += "\nChoose one labeled as a top and one labeled as a bottom. Respond in the same format as the input list. Do not output any other information or any wrong information."
-
+    print(prompt)
     payload = {
         "model": "mistral",
         "prompt": prompt,
@@ -283,12 +280,16 @@ def name_similarity(a, b):
 #     return outfit
 
 
-@app.route("/final")
+@app.route("/final", methods=["post"])
 def final():
     # set page to final.html
-    request.form.get("outfit")
     print("ENter the function")
-    output = generate_response('cold')
+    a = request.form.get("message")
+    zipcode = request.form.get("zipcode")
+    print(zipcode)
+    print(a)
+    print("ENter the function")
+    output = generate_response(". Preference is " + a, zipcode + ". ")
     print("Response generated")
     id = supabase.auth.get_user().user.id
     image_path1 = id + "_" + str(output[0]) + ".jpg"
