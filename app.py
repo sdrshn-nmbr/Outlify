@@ -30,6 +30,16 @@ def home():
     else:
         return render_template("login.html")
 
+@app.route("/preferences")
+def preferences():
+    user = supabase.auth.get_user()
+
+    if user:
+        # print(user)
+        return render_template("preferences.html")
+    else:
+        return render_template("login.html")
+    
 
 @app.route("/signup")
 def signup_page():
@@ -108,7 +118,7 @@ def llava_scan(path):
     messages.append({"role": "user", "content": prompt})
 
     payload = {
-        "model": "llava",
+        "model": "tinyllava",
         "messages": messages,
         "stream": False,
         "images": [f"{base64_image}"],
@@ -261,14 +271,20 @@ def final():
     return render_template("final.html")
 
 
-@app.route("/image/<string:image_id>")
-def display_image(image_id):
+@app.route("/uploads/top")
+def display_top():
     # Get image data from the database
-    image_data = get_image_from_database(image_id)
-
+    with open("uploads/top.jpg", "rb") as f:
+        image_data = f.read()
     # Return image data as response
-    return send_file(image_data, mimetype="image/jpeg")
+    return image_data
 
+@app.route("/uploads/bottom")
+def display_bottom():
+    # Get image data from the database
+    with open("uploads/bottom.jpg", "rb") as f:
+        image_data = f.read()
+    return image_data
 
 @app.route("/upload", methods=["POST"])
 def upload():
