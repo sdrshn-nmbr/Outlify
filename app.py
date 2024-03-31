@@ -211,20 +211,30 @@ def generate_response(inputs):
         return f"Request failed with status code: {response.status_code}"
 
     result = response.json()["response"]
-    print(result)
+    # print(result)
     result_sim_list = []
     result_sim_names = []
-    print(db_return_raw)
+    result_sim_list_bottom = []
+    result_sim_names_bottom = []
+    # print(db_return_raw)
     for item in db_return_raw:
         a = item["description"]
-        result_sim_list.append(name_similarity(str(a), str(result)))
-        result_sim_names.append(item["id"])
-    print("Did the end get here ?!?!?!?")
-    print(result_sim_list)
-    highest_indices = heapq.nlargest(2, range(len(result_sim_list)), key=lambda i: result_sim_list[i])
-    print(highest_indices)
-    display_ids = [result_sim_names[i] for i in (highest_indices)]
-    print(display_ids)
+        if "top" in a:
+            result_sim_list.append(name_similarity(str(a), str(result)))
+            result_sim_names.append(item["id"])
+        elif "bottom" in a:
+            result_sim_list_bottom.append(name_similarity(str(a), str(result)))
+            result_sim_names_bottom.append(item["id"])
+        else:
+
+            
+    # print("Did the end get here ?!?!?!?")
+    # print(result_sim_list)
+    highest_index_top = result_sim_list.index(max(result_sim_list))
+    highest_index_bottom = result_sim_list_bottom.index(max(result_sim_list_bottom))
+    # print(highest_indices)
+    display_ids = [result_sim_names[highest_index_top], result_sim_names[highest_index_bottom]]
+    # print(display_ids)
     return display_ids
 
 
