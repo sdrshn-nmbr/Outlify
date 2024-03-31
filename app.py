@@ -66,14 +66,15 @@ def get_weather():
         description = weather_data["weather"][0]["description"]
 
         print(
-            f"Temperature: {temperature}°F\n Humidity: {humidity}%\n Description: {description}"
+            f"Temperature: {temperature} Farenheit\n Humidity: {humidity}%\n Description: {description}"
         )
-        prompt = f"What should I wear today? This is the weather in my city: Temperature: {temperature}°C\n Humidity: {humidity}%\n Description: {description}"
+        prompt = f"This is the weather in my city: Temperature: {temperature}° Farenheit\n Humidity: {humidity}%\n Description: {description}"
         return prompt
     else:
-        print("Error fetching weather data")
-
-    # Call ollama
+        raise Exception("Error fetching weather data")
+    
+def top_or_bottom():
+    prompt = "classify this as a clothing item for top or bottom - one word answer"
 
 
 def generate_response(preferences):
@@ -94,7 +95,6 @@ def generate_response(preferences):
     # Check response
     if response.status_code == 200:
         result = response.json()["message"]["content"]
-        print(result)
         return result
     else:
         return f"Request failed with status code: {response.status_code}"
