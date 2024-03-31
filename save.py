@@ -7,7 +7,7 @@ def preferences():
         return render_template("preferences.html")
     else:
         return render_template("login.html")
-    
+
 
 @app.route("/uploads/top")
 def display_top():
@@ -18,6 +18,7 @@ def display_top():
         image_data = f.read()
     # Return image data as response
     return image_data
+
 
 @app.route("/uploads/bottom")
 def display_bottom():
