@@ -1,6 +1,6 @@
 # Outlify
 
-Outlify is an application designed to enhance your style by suggesting outfits from your personal wardrobe, powered by open-source AI technology.
+Outlify is an application designed to enhance your style by suggesting outfits from your personal wardrobe, powered by open-source multi-modal LLM technology.
 
 ## Project Structure
 
