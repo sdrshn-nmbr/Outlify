@@ -74,12 +74,12 @@ def signout_func():
     res = supabase.auth.sign_out()
     return redirect('/')
 
-@app.route("/auth")
-def test():
-    choice = 0
+# @app.route("/auth")
+# def test():
+#     choice = 0
 
-    while choice != '-1':
-        choice = input("Sign Up, Sign In, Sign Out, View Data (1, 2, 3, 4): ")
+#     while choice != '-1':
+#         choice = input("Sign Up, Sign In, Sign Out, View Data (1, 2, 3, 4): ")
 
 
 def forward_string():
@@ -110,6 +110,11 @@ def get_weather():
         #exit()
 
 
+# returns data from database for current user
+def get_data():
+    id = supabase.auth.get_user().user.id
+    data = insert.download_all(supabase, id)
+    return data
 
     # Call ollama
 def generate_response(session, message):
@@ -157,10 +162,11 @@ def final():
 
     return render_template('final.html')
 
-@app.route('/image/<int:image_id>')
+@app.route('/uploads/<int:image_id>')
 def display_image(image_id):
     # Get image data from the database
-    image_data = get_image_from_database(image_id)
+    print("!!!!!!!!!!!!!!!!!!!")
+    print(image_id)
     
     # Return image data as response
     return send_file(image_data, mimetype='image/jpeg')
@@ -217,6 +223,8 @@ def login_evan():
         return redirect('/')
 
     return  render_template('main.html')
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)

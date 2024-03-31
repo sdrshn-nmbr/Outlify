@@ -12,6 +12,6 @@ def download(supabase, image_path, destination):
         f.write(res)
 
 def download_all(supabase, user_id):
-    response = supabase.table("Users").select("id", "description").execute()
+    response = supabase.table("Users").select("id", "description", "user_id").eq('user_id', user_id).execute()
     return response.data
 
