@@ -129,5 +129,3 @@ def name_similarity(a, b):
 
 
 generate_response(" ")
-
-
