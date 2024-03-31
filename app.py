@@ -20,6 +20,7 @@ supabase: Client = create_client(url, key)
 app = Flask(__name__)
 level = "casual"
 
+
 @app.route("/")
 def home():
     user = supabase.auth.get_user()
@@ -30,9 +31,11 @@ def home():
     else:
         return render_template("login.html")
 
+
 @app.route("/casual")
 def casual():
     return render_template("preferences.html")
+
 
 @app.route("/preferences")
 def preferences():
@@ -206,7 +209,7 @@ def generate_response(inputs):
         "prompt": prompt,
         "stream": False,
     }
-    
+
     print("did it get here")
     # Send POST request
     response = requests.post(url_llama, json=payload)
@@ -233,20 +236,23 @@ def generate_response(inputs):
         else:
             result_sim_list_bottom.append(name_similarity(str(a), str(result)))
             result_sim_list.append(0)
-    
+
     if len(result_sim_list) != 0 and len(result_sim_list_bottom) != 0:
-        
+
         # print("Did the end get here ?!?!?!?")
         # print(result_sim_list)
         highest_index_top = result_sim_list.index(max(result_sim_list))
         highest_index_bottom = result_sim_list_bottom.index(max(result_sim_list_bottom))
         # print(highest_indices)
-        display_ids = [result_sim_names[highest_index_top], result_sim_names[highest_index_bottom]]
+        display_ids = [
+            result_sim_names[highest_index_top],
+            result_sim_names[highest_index_bottom],
+        ]
         print(highest_index_top, highest_index_bottom)
         # print(display_ids)
     else:
         raise Exception("Sufficient tops or bottoms NOT found")
-    
+
     return display_ids
 
 
@@ -255,7 +261,7 @@ def name_similarity(a, b):
     a = a.lower()
     b = b.lower()
     print("A" + a)
-    print("B" +b)
+    print("B" + b)
     if a == b:
         return 1
     elif a in b or b in a:
@@ -286,10 +292,11 @@ def name_similarity(a, b):
 
 @app.route("/final")
 def final():
+
     # set page to final.html
     request.form.get("outfit")
     print("ENter the function")
-    output = generate_response('cold')
+    output = generate_response("cold")
     print("Response generated")
     id = supabase.auth.get_user().user.id
     image_path1 = id + "_" + str(output[0]) + ".jpg"
@@ -304,7 +311,11 @@ def final():
     except Exception as e:
         print("error2")
         print(e)
-    return render_template("final.html")
+
+    if supabase.auth.get_user():
+        return render_template("final.html")
+    else:
+        return render_template("login.html")
 
 
 @app.route("/uploads/top")
