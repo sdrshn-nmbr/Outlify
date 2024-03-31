@@ -29,24 +29,24 @@ pip install -r requirements.txt
 
 ### Login
 
-<img src="static/demo_imgs/login.jpeg" alt="Login Page" width="300">
+<img src="static/demo_imgs/login.jpeg" alt="Login Page" width="200">
 
 
 ## Home
 
-<img src="static/demo_imgs/main.jpeg" alt="Home Page" width="300">
+<img src="static/demo_imgs/main.jpeg" alt="Home Page" width="200">
 
 
 ## Preferences
 
-<img src="static/demo_imgs/preferences.jpeg" alt="Preferences Page" width="300">
+<img src="static/demo_imgs/preferences.jpeg" alt="Preferences Page" width="200">
 
 
 ## Outfit
 
-<img src="static/demo_imgs/outfit.jpeg" alt="Outfit Page" width="300">
+<img src="static/demo_imgs/outfit.jpeg" alt="Outfit Page" width="200">
 
 
 ## Re-outlify
 
-<img src="static/demo_imgs/reoutlify.jpeg" alt="Re-outlify Page" width="300">
+<img src="static/demo_imgs/reoutlify.jpeg" alt="Re-outlify Page" width="200">
