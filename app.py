@@ -1,19 +1,24 @@
 from flask import Flask, request, redirect, url_for, render_template
-#from postgrest_py import PostgrestClient
+from difflib import SequenceMatcher
+import base64
+from PIL import Image
+
+# from postgrest_py import PostgrestClient
 from dotenv import load_dotenv
 import os
 import requests
 from pprint import pprint as pp
 import insert
+import heapq
 
 from supabase import create_client, Client
 
-load_dotenv()
-url: str = os.environ.get("SUPABASE_URL")
-key: str = os.environ.get("SUPABASE_KEY")
+url = "https://rzdyvqcuzbdcaibdrypw.supabase.co"
+key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6ZHl2cWN1emJkY2FpYmRyeXB3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTE4MTQ1MzksImV4cCI6MjAyNzM5MDUzOX0.pqHVSybnPnXseAdDJ3bhTWUsmq7n3j-iGFRt_R4RnQQ"
 supabase: Client = create_client(url, key)
 
 app = Flask(__name__)
+
 
 @app.route("/")
 def home():
@@ -21,9 +26,10 @@ def home():
 
     if user:
         # print(user)
-        return render_template('main.html')
+        return render_template("main.html")
     else:
-        return render_template('login.html')
+        return render_template("login.html")
+
 
 @app.route("/preferences")
 def preferences():
@@ -31,42 +37,42 @@ def preferences():
 
     if user:
         # print(user)
-        return render_template('preferences.html')
+        return render_template("preferences.html")
     else:
-        return render_template('login.html')
-    
+        return render_template("login.html")
+
+
 @app.route("/signup")
 def signup_page():
-    return render_template('signup.html')
+    return render_template("signup.html")
 
-@app.route('/login_func', methods=["post"])
+
+@app.route("/login_func", methods=["post"])
 def login_func():
     email = request.form.get("email")
     password = request.form.get("password")
 
     try:
-        data, error = supabase.auth.sign_in_with_password({"email": email, "password": password})
+        data, error = supabase.auth.sign_in_with_password(
+            {"email": email, "password": password}
+        )
     except Exception as e:
         print("!!!!!!!!!!!!!!!!!!!")
         print(e)
-        return redirect('/')
+        return redirect("/")
 
-    return redirect('/')
+    return redirect("/")
 
-@app.route('/signup_func', methods=['post'])
+
+@app.route("/signup_func", methods=["post"])
 def signup_func():
     email = request.form.get("email")
     password = request.form.get("password")
 
     try:
-        res = supabase.auth.sign_up(
-            {
-                'email': email,
-                'password': password
-            }
-        )
+        res = supabase.auth.sign_up({"email": email, "password": password})
     except:
-        return redirect('/signup')
+        return redirect("/signup")
     try:
         user = supabase.auth.get_user()
         id = user.user.id
@@ -76,31 +82,84 @@ def signup_func():
         print("!!!!!!!!!!!!!!!!!!")
         print(e)
 
-    return redirect('/')
+    return redirect("/")
 
-@app.route('/signout')
+
+@app.route("/signout")
 def signout_func():
     res = supabase.auth.sign_out()
-    return redirect('/')
-
-# @app.route("/auth")
-# def test():
-#     choice = 0
-
-#     while choice != '-1':
-#         choice = input("Sign Up, Sign In, Sign Out, View Data (1, 2, 3, 4): ")
+    return redirect("/")
 
 
-def forward_string():
-    return "Hello"
+def image_to_base64(image_path):
+    try:
+        # Open the image file
+        with open(image_path, "rb") as img_file:
+            # Read the image data
+            img_data = img_file.read()
+            # Encode the image data to base64
+            base64_data = base64.b64encode(img_data).decode("utf-8")
+            return str(base64_data)
+    except FileNotFoundError:
+        print("Error: File not found.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+
+def llava_scan(path):
+    url_llama = "http://localhost:11434/api/generate"
+
+    base64_image = image_to_base64(path)
+    print("WOmp womp womp womp womp")
+    prompt = "Classify this as a clothing item for top or bottom - one word answer"
+
+    payload = {
+        "model": "llava",
+        "prompt": prompt,
+        "stream": False,
+        "images": [base64_image],
+        "keep_alive": 1000,
+    }
+
+    # Send POST request
+    response = requests.post(url_llama, json=payload)
+    print("WOmp womp womp womp womp1")
+
+    # Check response
+    if response.status_code == 200 or response.status_code == 201:
+        result1 = response.json()["response"]
+        # print(response.json())
+    else:
+        return f"Request failed with status code: {response.status_code} 111111"
+
+    prompt = "Give a one sentence description of this clothing item"
+
+    payload = {
+        "model": "llava",
+        "prompt": prompt,
+        "stream": False,
+        "images": [base64_image],
+    }
+
+    response = requests.post(url_llama, json=payload)
+    print("WOmp womp womp womp womp2")
+
+    if response.status_code == 200 or response.status_code == 201:
+        result2 = response.json()["response"]
+        # print(response.json())
+    else:
+        return f"Request failed with status code: {response.status_code} 222222"
+
+    result = result1 + ":" + result2
+    return result
+
 
 # Connect to weather API
-@app.route('/weather')
+@app.route("/weather")
 def get_weather():
-    zipcode = input("Enter Zipcode: ")
+    zipcode = 10001
     api_key = "882d7c4617b36d2101b88c388111c3a0"
     url = f"http://api.openweathermap.org/data/2.5/weather?zip={zipcode},us&appid={api_key}&units=imperial"
-    #print("Hello")
     response = requests.get(url)
     weather_data = response.json()
 
@@ -109,99 +168,160 @@ def get_weather():
         humidity = weather_data["main"]["humidity"]
         description = weather_data["weather"][0]["description"]
 
-        print(f"Temperature: {temperature}°C\n Humidity: {humidity}%\n Description: {description}")
-        prompt = f"What should I wear today? This is the weather in my city: Temperature: {temperature}°C\n Humidity: {humidity}%\n Description: {description}"
-        messages = []
-        messages.append({"roles": "user", "content": prompt})
-        return generate_response(requests.Session(), messages)
+        print(
+            f"Temperature: {temperature} Farenheit\n Humidity: {humidity}%\n Description: {description}"
+        )
+        prompt = f"This is the weather in my city: Temperature: {temperature} Farenheit\n Humidity: {humidity}%\n Description: {description}"
+        return prompt
     else:
         print("Error fetching weather data")
-        #exit()
+
+    """
+    db_return =
+    [
+        {id: '1', name: 'Top:Black crewneck t-shirt'},
+        {id: '2', name: 'Top:White V-neck t-shirt'},
+        {
+        ...
+    ]
+    """
 
 
-# returns data from database for current user
-def get_data():
-    id = supabase.auth.get_user().user.id
-    data = insert.download_all(supabase, id)
-    return data
+def generate_response(inputs):
+    url_llama = "http://localhost:11434/api/generate"
+    prompt = get_weather() + inputs
+    prompt += " Choose just 1 top and 1 bottom from the following options that go well together."
+    db_return_raw = insert.download_all(supabase, supabase.auth.get_user().user.id)
+    db_return = str(db_return_raw)
+    print("downloaded")
+    prompt += db_return
 
-    # Call ollama
-def generate_response(session, message):
-    url_llama = "http://localhost:11434/api/chat"
+    prompt += "\nChoose one labeled as a top and one labeled as a bottom. Respond in the same format as the input list. Do not output any other information or any wrong information."
 
     payload = {
-        "model": "llama2-uncensored",
-        'messages': message,
+        "model": "mistral",
+        "prompt": prompt,
         "stream": False,
     }
-
-    # Send POST request using the session
-    response = session.post(url_llama, json=payload)
-
+    print("did it get here")
+    # Send POST request
+    response = requests.post(url_llama, json=payload)
     # Check response
-    if response.status_code == 200:
-        result = response.json()["message"]["content"]
+    if response.status_code != 200:
+        return f"Request failed with status code: {response.status_code}"
 
-        pp(result)
+    result = response.json()["response"]
+    print(result)
+    result_sim_list = []
+    result_sim_names = []
+    print(db_return_raw)
+    for item in db_return_raw:
+        a = item["description"]
+        result_sim_list.append(name_similarity(str(a), str(result)))
+        result_sim_names.append(item["id"])
+    print("Did the end get here ?!?!?!?")
+    print(result_sim_list)
+    highest_indices = heapq.nlargest(2, range(len(result_sim_list)), key=lambda i: result_sim_list[i])
+    print(highest_indices)
+    display_ids = [result_sim_names[i] for i in (highest_indices)]
+    print(display_ids)
+    return display_ids
+
+
+def name_similarity(a, b):
+    # Returns score for string similarity from 0 to 1
+    a = a.lower()
+    b = b.lower()
+    print("A" + a)
+    print("B" +b)
+    if a == b:
+        return 1
+    elif a in b or b in a:
+        return (1 + SequenceMatcher(None, a, b).ratio()) / 2
     else:
-        print("Request failed with status code:", response.status_code)
-        print("Response:")
-        print(response.text)  # Print error response
+        return (SequenceMatcher(None, a, b).ratio()) / 2
 
-# Get preferences (outfit type)
-def get_preferences():
-    outfit_type = input("Enter 1 for Casual, 2 for Semi-formal, 3 for Formal")
-    return outfit_type
+
+# # Get preferences (outfit type)
+# def get_preferences():
+#     outfit_type = input("Enter 1 for Casual, 2 for Semi-formal, 3 for Formal")
+#     return outfit_type
+
 
 # Get info for DB
 
-def generate_outfit():
-    # Get weather
-    get_weather()
-    # Get preferences
-    preferences = get_preferences()
 
-    generate_response(requests.Session(), preferences)
+# def generate_outfit():
+#     # Get weather
+#     get_weather()
+#     # Get preferences
+#     name = get_preferences()
 
-    return outfit
+#     generate_response(requests.Session(), name)
 
-@app.route('/final')
+#     return outfit
+
+
+@app.route("/final")
 def final():
-    #set page to final.html
+    # set page to final.html
+    print("ENter the function")
+    output = generate_response('cold')
+    print("Response generated")
+    id = supabase.auth.get_user().user.id
+    image_path1 = id + "_" + str(output[0]) + ".jpg"
+    image_path2 = id + "_" + str(output[1]) + ".jpg"
+    try:
+        insert.download(supabase, image_path1, "uploads/top.jpg")
+    except Exception as e:
+        print("error1")
+        print(e)
+    try:
+        insert.download(supabase, image_path2, "uploads/bottom.jpg")
+    except Exception as e:
+        print("error2")
+        print(e)
+    return render_template("final.html")
 
-    return render_template('final.html')
 
-@app.route('/uploads/<int:image_id>')
-def display_image(image_id):
+@app.route("/uploads/top")
+def display_top():
     # Get image data from the database
-    print("!!!!!!!!!!!!!!!!!!!")
-    print(image_id)
-    
+    with open("uploads/top.jpg", "rb") as f:
+        image_data = f.read()
     # Return image data as response
-    return send_file(image_data, mimetype='image/jpeg')
+    return image_data
 
-@app.route('/upload', methods=['POST'])
+
+@app.route("/uploads/bottom")
+def display_bottom():
+    # Get image data from the database
+    with open("uploads/bottom.jpg", "rb") as f:
+        image_data = f.read()
+    return image_data
+
+
+@app.route("/upload", methods=["POST"])
 def upload():
     user = supabase.auth.get_user()
-    print(user)
     # if not user:
     #     return redirect('/')
-    uploaded_file = request.files['file']
+    uploaded_file = request.files["file"]
     uploaded_file.save("uploads/" + uploaded_file.filename)
     name = "uploads/" + uploaded_file.filename
     description = llava_scan(name)
-    print(uploaded_file)
     try:
+        print("Did this work")
         id = insert.insert(supabase, user.user.id, name, description)
         print(id)
     except Exception as e:
-        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`1`1")
         print(e)
     # os.remove(name)
-    print(uploaded_file)
-    return render_template('main.html')
+    return render_template("main.html")
 
-@app.route('/evan')
+
+@app.route("/evan")
 def evan():
     user = supabase.auth.get_user()
     try:
@@ -210,9 +330,10 @@ def evan():
     except Exception as e:
         print(e)
         print("error")
-    return render_template('main.html')
+    return render_template("main.html")
 
-@app.route('/insertMeth')
+
+@app.route("/insertMeth")
 def insertMeth():
     try:
         user = supabase.auth.get_user()
@@ -222,18 +343,20 @@ def insertMeth():
     except Exception as e:
         print("!!!!!!!!!!!!!!!!!!")
         print(e)
-    return render_template('main.html')
+    return render_template("main.html")
 
-@app.route('/login_evan')
+
+@app.route("/login_evan")
 def login_evan():
 
     try:
-        data, error = supabase.auth.sign_in_with_password({"email": "evanlmiller20@gmail.com", "password": "password1"})
+        data, error = supabase.auth.sign_in_with_password(
+            {"email": "evanlmiller20@gmail.com", "password": "password1"}
+        )
     except:
-        return redirect('/')
+        return redirect("/")
 
-    return  render_template('main.html')
-
+    return render_template("main.html")
 
 
 if __name__ == "__main__":
