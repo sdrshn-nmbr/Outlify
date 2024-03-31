@@ -18,7 +18,7 @@ key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6
 supabase: Client = create_client(url, key)
 
 app = Flask(__name__)
-
+level = "casual"
 
 @app.route("/")
 def home():
@@ -30,6 +30,9 @@ def home():
     else:
         return render_template("login.html")
 
+@app.route("/casual")
+def casual():
+    return render_template("preferences.html")
 
 @app.route("/preferences")
 def preferences():
@@ -284,6 +287,7 @@ def name_similarity(a, b):
 @app.route("/final")
 def final():
     # set page to final.html
+    request.form.get("outfit")
     print("ENter the function")
     output = generate_response('cold')
     print("Response generated")
