@@ -160,6 +160,8 @@ def llava_scan(path):
     return result
 
 def get_weather(zip):
+    if zip is None:
+        zip = 47906
     zipcode = zip
     api_key = "882d7c4617b36d2101b88c388111c3a0"
     url = f"http://api.openweathermap.org/data/2.5/weather?zip={zipcode},us&appid={api_key}&units=imperial"
@@ -191,6 +193,8 @@ def get_weather(zip):
 
 
 def generate_response(inputs, zip):
+    print(f"........{zip}")
+    print(f"!!!!!!!!!!!!!!!!!!!!!!{inputs}")
     url_llama = "http://localhost:11434/api/generate"
     prompt = get_weather(zip) + inputs
     prompt += " Choose just 1 top and 1 bottom from the following options that go well together."
@@ -301,7 +305,10 @@ def final():
     print(zipcode)
     print(a)
     print("ENter the function")
-    output = generate_response(". Preference is " + a, zipcode)
+    try:
+        output = generate_response(". Preference is " + a, zipcode)
+    except:
+        output = generate_response(". Preference is " + a, 47906)
     print("Response generated")
     id = supabase.auth.get_user().user.id
     image_path1 = id + "_" + str(output[0]) + ".jpg"
