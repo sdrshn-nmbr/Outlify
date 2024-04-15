@@ -9,8 +9,7 @@ The project is organized as follows:
 - `app.py`: The primary application file.
 - `insert.py`: Logic for Supabase database operations.
 - `hacker/`: Virtual environment containing all required packages. Activate using `source hacker/bin/activate`.
-- `Images/`: Directory holding images utilized within the application.
-- `static/`: Stores static files such as CSS and JavaScript for the web application.
+- `static/`: Stores static files such as CSS and JavaScript for the web application, as well as images shown throughout the website.
 - `templates/`: Holds HTML templates for the web application.
 
 ## Setup
